@@ -64,13 +64,14 @@ const ShippingPolicyEditor: React.FC = () => {
     };
 
     fetchContent();
-  }, []);  const handleSave = async () => {
+  }, []);
+
+  const handleSave = async () => {
     if (!editorRef.current) return;
     
     try {
       const content = editorRef.current.getContent();
 
-      // Check if the record exists first
       const { data: existingData, error: checkError } = await supabase
         .from('content')
         .select('id')
@@ -85,7 +86,6 @@ const ShippingPolicyEditor: React.FC = () => {
       let error;
       
       if (existingData) {
-        // Update existing record
         const { error: updateError } = await supabase
           .from('content')
           .update({ 
@@ -95,7 +95,6 @@ const ShippingPolicyEditor: React.FC = () => {
           .eq('id', 'shipping-policy');
         error = updateError;
       } else {
-        // Insert new record
         const { error: insertError } = await supabase
           .from('content')
           .insert({ 
@@ -155,7 +154,6 @@ const ShippingPolicyEditor: React.FC = () => {
               <div className="mb-2">
                 <label className="text-sm text-gray-600">Body</label>
               </div>
-              
               <Editor
                 apiKey="kw7kx2lt3nplhyg9nl328rrwc1qblygubse4aqewi5q17i11"
                 onInit={(_evt, editor) => {
@@ -180,6 +178,7 @@ const ShippingPolicyEditor: React.FC = () => {
                   height: 500,
                   menubar: false,
                   plugins: ['lists'],
+                  readonly: false,
                   toolbar: [
                     { name: 'styles', items: ['formatselect'] },
                     { name: 'fontfamily', items: ['fontselect'] },

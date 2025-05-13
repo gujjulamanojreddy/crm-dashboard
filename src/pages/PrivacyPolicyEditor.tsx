@@ -60,7 +60,6 @@ const PrivacyPolicyEditor: React.FC = () => {
           throw error;
         }
 
-        // If we found existing content, use it
         if (data?.content) {
           setSavedContent(data.content);
         }
@@ -73,13 +72,14 @@ const PrivacyPolicyEditor: React.FC = () => {
     };
 
     fetchContent();
-  }, []);  const handleSave = async () => {
+  }, []);
+
+  const handleSave = async () => {
     if (!editorRef.current) return;
     
     try {
       const content = editorRef.current.getContent();
 
-      // Check if the record exists first
       const { data: existingData, error: checkError } = await supabase
         .from('content')
         .select('id')
@@ -94,7 +94,6 @@ const PrivacyPolicyEditor: React.FC = () => {
       let error;
       
       if (existingData) {
-        // Update existing record
         const { error: updateError } = await supabase
           .from('content')
           .update({ 
@@ -104,7 +103,6 @@ const PrivacyPolicyEditor: React.FC = () => {
           .eq('id', 'privacy-policy');
         error = updateError;
       } else {
-        // Insert new record
         const { error: insertError } = await supabase
           .from('content')
           .insert({ 
@@ -132,6 +130,7 @@ const PrivacyPolicyEditor: React.FC = () => {
       );
     }
   };
+
   return (
     <div className="p-6">
       <div className="flex items-center gap-2 mb-4">
@@ -187,6 +186,7 @@ const PrivacyPolicyEditor: React.FC = () => {
                   height: 500,
                   menubar: false,
                   plugins: ['lists'],
+                  readonly: false,
                   toolbar: [
                     { name: 'styles', items: ['formatselect'] },
                     { name: 'fontfamily', items: ['fontselect'] },
