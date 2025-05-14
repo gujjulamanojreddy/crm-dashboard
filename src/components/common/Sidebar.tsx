@@ -15,7 +15,6 @@ import {
   LogOut,
   FileText,
   Share2,
-  Settings,
   Type, // Added for Application Name icon
   Image // Add Image icon for Logos
 } from 'lucide-react';
@@ -198,10 +197,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           >
             <NavItem 
               to="/orders" 
-              icon={<ShoppingBag />} 
-              label="Orders" 
+              icon={<ShoppingBag />}
+              label="New Orders" 
               depth={1}
               onClick={closeMobile}
+              collapsed={collapsed}
             />
           </NavGroup>
           <NavItem

@@ -168,12 +168,13 @@ const Products: React.FC = () => {
 
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <Input
-                  type="text"
+                  type="search"
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={handleSearch}
-                  leftIcon={<Search size={16} />}
-                  className="w-full sm:w-64"
+                  variant="search"
+                  leftIcon={<Search className="h-4 w-4 transition-colors duration-200" />}
+                  className="w-full sm:w-80"
                 />
                 <Select
                   value={categoryFilter}

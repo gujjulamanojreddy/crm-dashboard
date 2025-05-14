@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { FileSpreadsheet, Search, Filter, Eye, Download, Printer, MoreHorizontal } from 'lucide-react';
+import { FileSpreadsheet, Search, Eye, Download, Printer, MoreHorizontal } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Table, TableHead, TableBody, TableRow, TableHeader, TableCell, TablePagination } from '../components/ui/Table';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
+import { exportToExcel } from '../utils/exportToExcel';
+import { useToast } from '../components/ui/Toaster';
 
 // Mock data
 const mockOrders = [
@@ -73,7 +75,29 @@ const Orders: React.FC = () => {
   const [searchType, setSearchType] = useState('orderId');
   const [statusFilter, setStatusFilter] = useState('all');
   
+  const { toast } = useToast();
   const totalPages = Math.ceil(orders.length / parseInt(entriesPerPage));
+  
+  const handleExportToExcel = async () => {
+    try {
+      // Format data for export
+      const exportData = orders.map(order => ({
+        'Order ID': order.id,
+        'Customer': order.customer.name,
+        'Email': order.customer.email,
+        'Amount': `₹${order.amount.toLocaleString()}`,
+        'Date': order.date,
+        'Payment Status': order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus === 'pending' ? 'Not Paid' : 'Failed',
+        'Order Status': order.status
+      }));
+      
+      await exportToExcel(exportData, 'Orders_List');
+      toast('Orders exported successfully', 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast('Failed to export orders', 'error');
+    }
+  };
   
   const handleEntriesChange = (value: string) => {
     setEntriesPerPage(value);
@@ -123,6 +147,28 @@ const Orders: React.FC = () => {
     }
   };
 
+  // Add new functions for action buttons
+  const handleViewOrder = (orderId: string) => {
+    toast(`Viewing details for Order #${orderId}`, 'info');
+    // In a real app, this would open order details page or modal
+  };
+
+  const handleDownloadInvoice = (orderId: string) => {
+    toast(`Downloading invoice for Order #${orderId}`, 'success');
+    // In a real app, this would download the invoice PDF
+  };
+
+  const handlePrintOrder = (orderId: string) => {
+    toast(`Printing order #${orderId}`, 'info');
+    // In a real app, this would open the print dialog
+    window.print();
+  };
+
+  const handleMoreOptions = (orderId: string) => {
+    toast(`More options for Order #${orderId}`, 'info');
+    // In a real app, this would show a dropdown with more actions
+  };
+
   return (
     <div className="p-4 md:p-6">
       <Card>
@@ -131,6 +177,7 @@ const Orders: React.FC = () => {
           <Button 
             leftIcon={<FileSpreadsheet size={16} />} 
             variant="success"
+            onClick={handleExportToExcel}
           >
             Export to Excel
           </Button>
@@ -236,16 +283,32 @@ const Orders: React.FC = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end items-center space-x-2">
-                        <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                        <button 
+                          className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                          title="View Order"
+                          onClick={() => handleViewOrder(order.id)}
+                        >
                           <Eye size={16} />
                         </button>
-                        <button className="p-1 text-gray-600 hover:bg-gray-100 rounded">
+                        <button 
+                          className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                          title="Download Invoice"
+                          onClick={() => handleDownloadInvoice(order.id)}
+                        >
                           <Download size={16} />
                         </button>
-                        <button className="p-1 text-gray-600 hover:bg-gray-100 rounded">
+                        <button 
+                          className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                          title="Print Order"
+                          onClick={() => handlePrintOrder(order.id)}
+                        >
                           <Printer size={16} />
                         </button>
-                        <button className="p-1 text-gray-500 hover:bg-gray-100 rounded">
+                        <button 
+                          className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                          title="More Options"
+                          onClick={() => handleMoreOptions(order.id)}
+                        >
                           <MoreHorizontal size={16} />
                         </button>
                       </div>

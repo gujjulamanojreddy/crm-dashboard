@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { FileSpreadsheet, Search, Filter, Eye, Truck, Clipboard, XOctagon, Check } from 'lucide-react';
+import { FileSpreadsheet, Search, Eye, Truck, XOctagon, Check } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Table, TableHead, TableBody, TableRow, TableHeader, TableCell, TablePagination } from '../components/ui/Table';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import { useToast } from '../components/ui/Toaster';
+import { exportToExcel } from '../utils/exportToExcel';
 
 // Mock data
 const mockNewOrders = [
@@ -53,7 +54,26 @@ const NewOrders: React.FC = () => {
   
   const { toast } = useToast();
   
-  const totalPages = Math.ceil(orders.length / parseInt(entriesPerPage));
+  // Filter to show only orders with 'new' status
+  const filteredOrders = orders
+    .filter(order => order.status === 'new')
+    .filter(order => {
+      if (!searchTerm) return true;
+      
+      switch (searchType) {
+        case 'orderId':
+          return order.id.toLowerCase().includes(searchTerm.toLowerCase());
+        case 'customer':
+          return order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+        case 'email':
+          return order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+        default:
+          return true;
+      }
+    });
+  
+  const newOrders = filteredOrders;
+  const totalPages = Math.ceil(newOrders.length / parseInt(entriesPerPage));
   
   const handleEntriesChange = (value: string) => {
     setEntriesPerPage(value);
@@ -83,6 +103,62 @@ const NewOrders: React.FC = () => {
     ));
     toast('Order #' + orderId + ' has been cancelled', 'error');
   };
+  
+  const acceptPayment = (orderId: string) => {
+    setOrders(orders.map(order => {
+      // If the order was in 'new' status and payment is now accepted, 
+      // automatically set it to processing status as well
+      if (order.id === orderId) {
+        const updatedOrder = { 
+          ...order, 
+          paymentStatus: 'paid' 
+        };
+        
+        // If the order status is still 'new', automatically update it to 'processing'
+        if (order.status === 'new') {
+          updatedOrder.status = 'processing';
+          toast(`Order #${orderId} has been set to processing and payment accepted`, 'success');
+        } else {
+          toast(`Payment for Order #${orderId} has been accepted`, 'success');
+        }
+        
+        return updatedOrder;
+      }
+      return order;
+    }));
+  };
+  
+  const viewOrderDetails = (orderId: string) => {
+    // In a real application, this would navigate to the order details page
+    // or open a modal with order details
+    toast('Viewing details for Order #' + orderId, 'info');
+  };
+  
+  const handleExportToExcel = async () => {
+    try {
+      // Format data for export - use only the filtered new orders
+      const exportData = newOrders.map(order => ({
+        'Order ID': order.id,
+        'Customer': order.customer.name,
+        'Email': order.customer.email,
+        'Amount': `₹${order.amount.toLocaleString()}`,
+        'Date': order.date,
+        'Payment Status': order.paymentStatus === 'paid' ? 'Paid' : 'Not Paid',
+        'Order Status': order.status
+      }));
+      
+      if (exportData.length === 0) {
+        toast('No new orders to export', 'info');
+        return;
+      }
+      
+      await exportToExcel(exportData, 'New_Orders_List');
+      toast('Orders exported successfully', 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast('Failed to export orders', 'error');
+    }
+  };
 
   return (
     <div className="p-4 md:p-6">
@@ -92,6 +168,7 @@ const NewOrders: React.FC = () => {
           <Button 
             leftIcon={<FileSpreadsheet size={16} />} 
             variant="success"
+            onClick={handleExportToExcel}
           >
             Export to Excel
           </Button>
@@ -121,7 +198,7 @@ const NewOrders: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
               <div className="flex items-center space-x-2 w-full sm:w-auto">
                 <Select
-                  label="Search by :"
+                  label="Search by"
                   value={searchType}
                   onChange={handleSearchTypeChange}
                   options={[
@@ -129,15 +206,16 @@ const NewOrders: React.FC = () => {
                     { value: 'customer', label: 'Customer' },
                     { value: 'email', label: 'Email' },
                   ]}
-                  className="w-32"
+                  className="w-40"
                 />
                 <Input
-                  type="text"
-                  placeholder="Search here..."
+                  type="search"
+                  placeholder="Search orders..."
                   value={searchTerm}
                   onChange={handleSearch}
-                  leftIcon={<Search size={16} />}
-                  className="w-full sm:w-64"
+                  variant="search"
+                  leftIcon={<Search className="h-4 w-4 transition-colors duration-200" />}
+                  className="w-full sm:w-80 pl-10"
                 />
               </div>
             </div>
@@ -157,8 +235,8 @@ const NewOrders: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orders.length > 0 ? (
-                  orders.map((order) => (
+                {newOrders.length > 0 ? (
+                  newOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">#{order.id}</TableCell>
                       <TableCell>
@@ -189,7 +267,11 @@ const NewOrders: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end items-center space-x-2">
-                          <button className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="View Order">
+                          <button 
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded" 
+                            title="View Order"
+                            onClick={() => viewOrderDetails(order.id)}
+                          >
                             <Eye size={16} />
                           </button>
                           <button 
@@ -199,7 +281,16 @@ const NewOrders: React.FC = () => {
                           >
                             <Truck size={16} />
                           </button>
-                          <button className="p-1 text-green-600 hover:bg-green-50 rounded" title="Accept Payment">
+                          <button 
+                            className={`p-1 rounded ${
+                              order.paymentStatus === 'paid' 
+                                ? 'text-gray-400 cursor-not-allowed' 
+                                : 'text-green-600 hover:bg-green-50'
+                            }`}
+                            title="Accept Payment"
+                            onClick={() => order.paymentStatus !== 'paid' && acceptPayment(order.id)}
+                            disabled={order.paymentStatus === 'paid'}
+                          >
                             <Check size={16} />
                           </button>
                           <button 

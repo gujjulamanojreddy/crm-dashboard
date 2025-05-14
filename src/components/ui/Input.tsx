@@ -7,10 +7,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   fullWidth?: boolean;
+  variant?: 'default' | 'search';
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, leftIcon, rightIcon, fullWidth = false, ...props }, ref) => {
+  ({ className, label, error, leftIcon, rightIcon, fullWidth = false, variant = 'default', ...props }, ref) => {
     const id = props.id || `input-${Math.random().toString(36).substring(2, 11)}`;
     
     return (
@@ -22,7 +23,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className={cn(
+              "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none",
+              variant === 'search' && "text-gray-400 group-hover:text-gray-500"
+            )}>
               {leftIcon}
             </div>
           )}
@@ -30,8 +34,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={id}
             className={cn(
-              'bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-150 ease-in-out',
-              leftIcon && 'pl-10',
+              'bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full transition duration-150 ease-in-out',
+              variant === 'default' && 'p-2.5',
+              variant === 'search' && 'pl-10 pr-4 py-2.5 group hover:border-gray-400',
+              leftIcon && variant !== 'search' && 'pl-10',
               rightIcon && 'pr-10',
               error && 'border-red-500 focus:ring-red-500 focus:border-red-500',
               className

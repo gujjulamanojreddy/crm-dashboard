@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, ChevronDown, Search, User, Settings, HelpCircle, LogOut } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
+import Input from '../ui/Input';
 
 interface HeaderProps {
   title: string;
@@ -12,9 +13,51 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const navigate = useNavigate();
-  const { logout } = useApp();
+  const [searchTerm, setSearchTerm] = useState('');
   
+  const navigate = useNavigate();
+  const { logout, performSearch } = useApp();
+  
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle search with debounce
+  const debouncedSearch = useCallback(
+    (value: string) => {
+      if (value.trim()) {
+        performSearch(value);
+      }
+    },
+    [performSearch]
+  );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      debouncedSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, debouncedSearch]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
   const toggleNotifications = () => {
     setNotificationsOpen(!notificationsOpen);
     if (profileOpen) setProfileOpen(false);
@@ -46,24 +89,29 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
       <div className="flex items-center space-x-4">
         {/* Search */}
         <div className="relative hidden md:block">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={16} className="text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search..."
-            className="py-2 pl-10 pr-4 w-64 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          <Input
+            type="search"
+            value={searchTerm}
+            onChange={handleSearch}
+            placeholder="Search orders, customers, products..."
+            variant="search"
+            leftIcon={<Search className="h-4 w-4" />}
+            className="w-64"
           />
         </div>
         
         {/* Notifications */}
-        <div className="relative">
+        <div className="relative" ref={notificationsRef}>
           <button
             onClick={toggleNotifications}
-            className="p-2 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 relative"
+            className={cn(
+              "p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-all duration-200 relative",
+              "focus:outline-none focus:ring-2 focus:ring-blue-500",
+              notificationsOpen && "bg-gray-100"
+            )}
           >
             <Bell size={18} />
-            <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
           </button>
           
           {notificationsOpen && (
@@ -91,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
         </div>
         
         {/* Profile dropdown */}
-        <div className="relative">
+        <div className="relative" ref={profileRef}>
           <button
             onClick={toggleProfile}
             className="flex items-center space-x-2 focus:outline-none group"
@@ -102,7 +150,13 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
             <div className="hidden md:block">
               <div className="flex items-center">
                 <span className="text-sm font-medium text-gray-800">Admin User</span>
-                <ChevronDown size={16} className={cn('ml-1 text-gray-500 transition-transform duration-200', profileOpen && 'transform rotate-180')} />
+                <ChevronDown 
+                  size={16} 
+                  className={cn(
+                    'ml-1 text-gray-500 transition-transform duration-200',
+                    profileOpen && 'transform rotate-180'
+                  )} 
+                />
               </div>
             </div>
           </button>
@@ -110,11 +164,17 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
           {profileOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 transform transition-all duration-200 origin-top">
               <div className="py-1">
-                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" onClick={() => navigate('/profile')}>
+                <button 
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" 
+                  onClick={() => navigate('/profile')}
+                >
                   <User size={16} className="mr-2" />
                   Edit Profile
                 </button>
-                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" onClick={() => navigate('/settings')}>
+                <button 
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" 
+                  onClick={() => navigate('/settings')}
+                >
                   <Settings size={16} className="mr-2" />
                   Settings
                 </button>
@@ -122,7 +182,7 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
                   <HelpCircle size={16} className="mr-2" />
                   Help Center
                 </button>
-                <div className="border-t border-gray-100"></div>
+                <div className="border-t border-gray-100" />
                 <button 
                   className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   onClick={handleLogout}

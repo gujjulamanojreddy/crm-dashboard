@@ -9,11 +9,28 @@ interface User {
   email: string | undefined;
 }
 
+// Type definitions for search result items
+
+interface SearchResultItem {
+  type: 'order' | 'product' | 'customer';
+  id: string;
+  title: string;
+  subtitle: string;
+  route: string;
+  status?: string;
+  contact?: string;
+}
+
 interface AppContextType {
   user: User | null;
   loading: boolean;
+  searchQuery: string;
+  searchResults: SearchResultItem[];
+  isSearching: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  setSearchQuery: (query: string) => void;
+  performSearch: (query: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -37,6 +54,9 @@ const mapSupabaseUser = (user: SupabaseUser | null): User | null => {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   useEffect(() => {
     // Check current session
@@ -56,10 +76,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const login = async (email: string, password: string) => {
     try {
+      // Attempt to sign in
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
+      
+      // Store login attempt in history
+      try {
+        const loginStatus = error ? 'failed' : 'success';
+        await supabase.from('login_history').insert({
+          user_id: data?.user?.id,
+          email: email,
+          ip_address: 'Client IP', // In a real app, you'd get this from the server
+          user_agent: navigator.userAgent,
+          login_status: loginStatus
+        });
+      } catch (historyError) {
+        console.error('Error storing login history:', historyError);
+        // Don't throw this error as it's not critical to the login process
+      }
       
       if (error) {
         console.error('Auth error:', error);
@@ -87,9 +123,124 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     setUser(null);
   };
+  
+  // Search functionality
+  const performSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      type DbOrder = {
+        id: string;
+        status: string;
+        amount: number;
+        customer: {
+          name: string;
+          email: string;
+        };
+      };
+
+      type DbProduct = {
+        id: string;
+        name: string;
+        salePrice: number;
+        category: string;
+      };
+
+      type DbCustomer = {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+      };
+
+      // Search in orders
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select<string, DbOrder>(`
+          id, 
+          status, 
+          amount, 
+          customer:customers!inner(
+            name,
+            email
+          )
+        `)
+        .or(`id.ilike.%${query}%, customers.name.ilike.%${query}%, customers.email.ilike.%${query}%`)
+        .limit(5);
+      
+      if (ordersError) throw ordersError;
+      
+      // Search in products
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select<string, DbProduct>('id, name, salePrice, category')
+        .or(`name.ilike.%${query}%, category.ilike.%${query}%`)
+        .limit(5);
+        
+      if (productsError) throw productsError;
+      
+      // Search in customers
+      const { data: customers, error: customersError } = await supabase
+        .from('customers')
+        .select<string, DbCustomer>('id, name, email, phone')
+        .or(`name.ilike.%${query}%, email.ilike.%${query}%, phone.ilike.%${query}%`)
+        .limit(5);
+        
+      if (customersError) throw customersError;
+      
+      // Combine results and format for display
+      const formattedResults: SearchResultItem[] = [
+        ...(orders || []).map(order => ({
+          type: 'order' as const,
+          id: order.id,
+          title: `Order #${order.id}`,
+          subtitle: order.customer ? `${order.customer.name} - ₹${order.amount.toLocaleString()}` : `₹${order.amount.toLocaleString()}`,
+          status: order.status,
+          route: `/orders?id=${order.id}`
+        })),
+        ...(products || []).map(product => ({
+          type: 'product' as const,
+          id: product.id,
+          title: product.name,
+          subtitle: `₹${product.salePrice.toLocaleString()} - ${product.category}`,
+          route: `/products?id=${product.id}`
+        })),
+        ...(customers || []).map(customer => ({
+          type: 'customer' as const,
+          id: customer.id,
+          title: customer.name,
+          subtitle: customer.email,
+          contact: customer.phone,
+          route: `/customers?id=${customer.id}`
+        }))
+      ];
+      
+      setSearchResults(formattedResults);
+      
+    } catch (error) {
+      console.error('Search error:', error);
+      toast.error('Search failed');
+      setSearchResults([]);
+    }
+    setIsSearching(false);
+  };
 
   return (
-    <AppContext.Provider value={{ user, loading, login, logout }}>
+    <AppContext.Provider value={{ 
+      user, 
+      loading, 
+      login, 
+      logout,
+      searchQuery,
+      setSearchQuery,
+      searchResults,
+      isSearching,
+      performSearch
+    }}>
       <ToastProvider>
         {children}
       </ToastProvider>

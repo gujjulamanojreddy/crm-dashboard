@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
-import { BarChart2, TrendingUp, Download, Calendar } from 'lucide-react';
+import { BarChart2, TrendingUp, Download } from 'lucide-react';
 import { Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui/Table';
 import Button from '../components/ui/Button';
-import Select from '../components/ui/Select';
+import { exportToExcel } from '../utils/exportToExcel';
+import { useToast } from '../components/ui/Toaster';
 
 // Mock data for top cities
 const topCities = [
@@ -39,6 +40,7 @@ const leastProducts = [
 
 const Reports: React.FC = () => {
   const [timeRange, setTimeRange] = useState('today');
+  const { toast } = useToast();
   
   // Mock data for stats
   const stats = {
@@ -50,28 +52,62 @@ const Reports: React.FC = () => {
   
   // Get current stats based on selected time range
   const currentStats = stats[timeRange as keyof typeof stats];
+
+  const handleExport = async () => {
+    try {
+      const exportData = [
+        {
+          'Time Range': timeRange === 'today' ? 'Today' : 
+                       timeRange === 'yesterday' ? 'Yesterday' : 
+                       timeRange === 'thisWeek' ? 'This Week' : 'This Month',
+          'Total Orders': currentStats.orders,
+          'Total Revenue': `₹${currentStats.revenue.toLocaleString()}`,
+          'New Users': currentStats.newUsers
+        },
+        ...topCities.map(city => ({
+          'City': city.city,
+          'Orders': city.orders,
+          'Revenue': `₹${city.revenue.toLocaleString()}`
+        })),
+        ...topProducts.map(product => ({
+          'Product': product.name,
+          'Orders': product.orders,
+          'Revenue': `₹${product.revenue.toLocaleString()}`
+        })),
+        ...leastProducts.map(product => ({
+          'Product': product.name,
+          'Orders': product.orders,
+          'Revenue': `₹{product.revenue.toLocaleString()}`
+        }))
+      ];
+      
+      await exportToExcel(exportData, `Analytics_Dashboard_${timeRange}`);
+      toast('Report exported successfully', 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast('Failed to export report', 'error');
+    }
+  };
   
   return (
     <div className="p-4 md:p-6">
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-900">Analytics Dashboard</h2>
         <div className="flex items-center space-x-2">
-          <Select
-            options={[
-              { value: 'today', label: 'Today' },
-              { value: 'yesterday', label: 'Yesterday' },
-              { value: 'thisWeek', label: 'This Week' },
-              { value: 'thisMonth', label: 'This Month' },
-            ]}
+          <select 
+            className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
             value={timeRange}
-            onChange={setTimeRange}
-            leftIcon={<Calendar size={16} className="text-gray-500" />}
-            className="w-40"
-          />
-          <Button
-            variant="outline"
-            leftIcon={<Download size={16} />}
+            onChange={(e) => setTimeRange(e.target.value)}
           >
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="thisWeek">This Week</option>
+            <option value="thisMonth">This Month</option>
+          </select>
+          <Button 
+            onClick={handleExport}
+          >
+            <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
         </div>
@@ -102,7 +138,7 @@ const Reports: React.FC = () => {
                 <p className="text-xs text-gray-500 mt-1">{timeRange === 'today' ? "Today's earnings" : timeRange === 'yesterday' ? "Yesterday's earnings" : timeRange === 'thisWeek' ? "This week's earnings" : "This month's earnings"}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-full text-green-600">
-                <DollarSign size={24} />
+                <DollarSign width={24} height={24} />
               </div>
             </div>
           </CardContent>
@@ -117,7 +153,7 @@ const Reports: React.FC = () => {
                 <p className="text-xs text-gray-500 mt-1">{timeRange === 'today' ? "Today's registrations" : timeRange === 'yesterday' ? "Yesterday's registrations" : timeRange === 'thisWeek' ? "This week's registrations" : "This month's registrations"}</p>
               </div>
               <div className="p-3 bg-amber-100 rounded-full text-amber-600">
-                <Users size={24} />
+                <Users width={24} height={24} />
               </div>
             </div>
           </CardContent>

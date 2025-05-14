@@ -5,42 +5,39 @@ import { Editor } from '@tinymce/tinymce-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
-const initialContent = `Privacy Policy
+const initialContent = `Refund Policy
 
-1. Information We Collect
-- Personal information (name, email, shipping address)
-- Payment information (processed securely through payment gateways)
-- Order details and preferences
-- Website usage data
-- Customer service communications
+1. Return Eligibility
+- Items must be returned within 14 days of delivery
+- Products must be unused and in original packaging
+- Original receipt or proof of purchase required
+- Some items may be non-returnable for hygiene reasons
 
-2. How We Use Your Information
-- Process and fulfill orders
-- Communicate about orders and services
-- Improve our products and services
-- Send promotional materials (with consent)
-- Comply with legal obligations
+2. Refund Process
+- Initiate return through your account dashboard
+- Print return shipping label
+- Ship item back using provided label
+- Refund processed within 5-7 business days
 
-3. Information Security
-- We implement appropriate security measures
-- Data is encrypted during transmission
-- Access to personal information is restricted
-- Regular security assessments are conducted
+3. Refund Methods
+- Original payment method will be refunded
+- Store credit available as an alternative
+- Shipping costs only refunded for defective items
+- Processing fees may be deducted
 
-4. Information Sharing
-We do not sell your personal information. We share information only with:
-- Shipping partners for delivery
-- Payment processors for transactions
-- Legal authorities when required by law
+4. Damaged or Defective Items
+- Report within 48 hours of delivery
+- Photo evidence may be required
+- Full refund including shipping for defective items
+- Free return shipping for damaged products
 
-5. Your Rights
-- Access your personal information
-- Correct inaccurate information
-- Request deletion of your information
-- Opt-out of marketing communications
-- File complaints with relevant authorities`;
+5. Exceptions
+- Customized or personalized items
+- Digital products or downloadable content
+- Seasonal or sale items
+- Items marked as final sale`;
 
-const PrivacyPolicyEditor: React.FC = () => {
+const RefundPolicyEditor: React.FC = () => {
   const navigate = useNavigate();
   const editorRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +49,7 @@ const PrivacyPolicyEditor: React.FC = () => {
         const { data, error } = await supabase
           .from('content')
           .select('content')
-          .eq('id', 'privacy-policy')
+          .eq('id', 'refund-policy')
           .maybeSingle();
 
         if (error) {
@@ -64,7 +61,7 @@ const PrivacyPolicyEditor: React.FC = () => {
           setSavedContent(data.content);
         }
       } catch (error: any) {
-        console.error('Error fetching privacy policy:', error);
+        console.error('Error fetching refund policy:', error);
         toast.error('Failed to load content');
       } finally {
         setIsLoading(false);
@@ -83,7 +80,7 @@ const PrivacyPolicyEditor: React.FC = () => {
       const { data: existingData, error: checkError } = await supabase
         .from('content')
         .select('id')
-        .eq('id', 'privacy-policy')
+        .eq('id', 'refund-policy')
         .maybeSingle();
 
       if (checkError) {
@@ -100,13 +97,13 @@ const PrivacyPolicyEditor: React.FC = () => {
             content: content,
             updated_at: new Date().toISOString()
           })
-          .eq('id', 'privacy-policy');
+          .eq('id', 'refund-policy');
         error = updateError;
       } else {
         const { error: insertError } = await supabase
           .from('content')
           .insert({ 
-            id: 'privacy-policy',
+            id: 'refund-policy',
             content: content,
             updated_at: new Date().toISOString()
           });
@@ -118,15 +115,15 @@ const PrivacyPolicyEditor: React.FC = () => {
         throw error;
       }
 
-      toast.success('Privacy policy saved successfully');
+      toast.success('Refund policy saved successfully');
       setSavedContent(content);
       navigate('/settings');
     } catch (error: any) {
-      console.error('Error saving privacy policy:', error);
+      console.error('Error saving refund policy:', error);
       toast.error(
         error.message 
           ? `Failed to save: ${error.message}` 
-          : 'Failed to save privacy policy. Please try again.'
+          : 'Failed to save refund policy. Please try again.'
       );
     }
   };
@@ -152,7 +149,7 @@ const PrivacyPolicyEditor: React.FC = () => {
 
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
-          <h2 className="text-lg font-medium mb-4">Privacy Policy</h2>
+          <h2 className="text-lg font-medium mb-4">Refund Policy</h2>
           {isLoading ? (
             <div className="h-[500px] flex items-center justify-center bg-gray-50 rounded-md">
               <p className="text-gray-500">Loading editor...</p>
@@ -231,4 +228,4 @@ const PrivacyPolicyEditor: React.FC = () => {
   );
 };
 
-export default PrivacyPolicyEditor;
+export default RefundPolicyEditor;

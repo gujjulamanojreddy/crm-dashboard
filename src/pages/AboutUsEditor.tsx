@@ -5,42 +5,44 @@ import { Editor } from '@tinymce/tinymce-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
-const initialContent = `Privacy Policy
+const initialContent = `About Us
 
-1. Information We Collect
-- Personal information (name, email, shipping address)
-- Payment information (processed securely through payment gateways)
-- Order details and preferences
-- Website usage data
-- Customer service communications
+1. Our Story
+- Founded in 2024 with a vision for innovation
+- Committed to delivering quality products
+- Growing community of satisfied customers
+- Continuously evolving to meet customer needs
+- Proud of our dedicated team
 
-2. How We Use Your Information
-- Process and fulfill orders
-- Communicate about orders and services
-- Improve our products and services
-- Send promotional materials (with consent)
-- Comply with legal obligations
+2. Our Mission
+- Provide exceptional shopping experience
+- Offer high-quality products at fair prices
+- Build lasting relationships with customers
+- Support sustainable business practices
+- Contribute to local communities
 
-3. Information Security
-- We implement appropriate security measures
-- Data is encrypted during transmission
-- Access to personal information is restricted
-- Regular security assessments are conducted
+3. Our Team
+- Experienced professionals
+- Dedicated customer support
+- Quality assurance specialists
+- Efficient logistics team
+- Innovation-driven developers
 
-4. Information Sharing
-We do not sell your personal information. We share information only with:
-- Shipping partners for delivery
-- Payment processors for transactions
-- Legal authorities when required by law
+4. Our Values
+- Customer satisfaction first
+- Quality without compromise
+- Transparency in operations
+- Environmental responsibility
+- Continuous improvement
 
-5. Your Rights
-- Access your personal information
-- Correct inaccurate information
-- Request deletion of your information
-- Opt-out of marketing communications
-- File complaints with relevant authorities`;
+5. Our Commitment
+- Fast and reliable shipping
+- Secure shopping experience
+- Responsive customer service
+- Regular product updates
+- Community engagement`;
 
-const PrivacyPolicyEditor: React.FC = () => {
+const AboutUsEditor: React.FC = () => {
   const navigate = useNavigate();
   const editorRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +54,7 @@ const PrivacyPolicyEditor: React.FC = () => {
         const { data, error } = await supabase
           .from('content')
           .select('content')
-          .eq('id', 'privacy-policy')
+          .eq('id', 'about-us')
           .maybeSingle();
 
         if (error) {
@@ -64,7 +66,7 @@ const PrivacyPolicyEditor: React.FC = () => {
           setSavedContent(data.content);
         }
       } catch (error: any) {
-        console.error('Error fetching privacy policy:', error);
+        console.error('Error fetching about us:', error);
         toast.error('Failed to load content');
       } finally {
         setIsLoading(false);
@@ -83,7 +85,7 @@ const PrivacyPolicyEditor: React.FC = () => {
       const { data: existingData, error: checkError } = await supabase
         .from('content')
         .select('id')
-        .eq('id', 'privacy-policy')
+        .eq('id', 'about-us')
         .maybeSingle();
 
       if (checkError) {
@@ -100,13 +102,13 @@ const PrivacyPolicyEditor: React.FC = () => {
             content: content,
             updated_at: new Date().toISOString()
           })
-          .eq('id', 'privacy-policy');
+          .eq('id', 'about-us');
         error = updateError;
       } else {
         const { error: insertError } = await supabase
           .from('content')
           .insert({ 
-            id: 'privacy-policy',
+            id: 'about-us',
             content: content,
             updated_at: new Date().toISOString()
           });
@@ -118,15 +120,15 @@ const PrivacyPolicyEditor: React.FC = () => {
         throw error;
       }
 
-      toast.success('Privacy policy saved successfully');
+      toast.success('About Us content saved successfully');
       setSavedContent(content);
       navigate('/settings');
     } catch (error: any) {
-      console.error('Error saving privacy policy:', error);
+      console.error('Error saving about us:', error);
       toast.error(
         error.message 
           ? `Failed to save: ${error.message}` 
-          : 'Failed to save privacy policy. Please try again.'
+          : 'Failed to save About Us content. Please try again.'
       );
     }
   };
@@ -152,7 +154,7 @@ const PrivacyPolicyEditor: React.FC = () => {
 
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
-          <h2 className="text-lg font-medium mb-4">Privacy Policy</h2>
+          <h2 className="text-lg font-medium mb-4">About Us</h2>
           {isLoading ? (
             <div className="h-[500px] flex items-center justify-center bg-gray-50 rounded-md">
               <p className="text-gray-500">Loading editor...</p>
@@ -231,4 +233,4 @@ const PrivacyPolicyEditor: React.FC = () => {
   );
 };
 
-export default PrivacyPolicyEditor;
+export default AboutUsEditor;

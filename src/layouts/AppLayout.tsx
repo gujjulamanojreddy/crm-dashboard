@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
 import Dashboard from '../pages/Dashboard';
-import Customers from '../pages/Customers';
+import { Customers } from '../pages/Customers';
 import Products from '../pages/Products';
 import Orders from '../pages/Orders';
 import Reports from '../pages/Reports';
@@ -16,6 +16,8 @@ import Profile from '../pages/Profile';
 import TermsEditor from '../pages/TermsEditor';
 import PrivacyPolicyEditor from '../pages/PrivacyPolicyEditor';
 import ShippingPolicyEditor from '../pages/ShippingPolicyEditor';
+import RefundPolicyEditor from '../pages/RefundPolicyEditor';
+import AboutUsEditor from '../pages/AboutUsEditor';
 
 const AppLayout: React.FC = () => {
   return (
@@ -129,6 +131,24 @@ const AppLayout: React.FC = () => {
               <>
                 <Header title="Shipping Policy" subtitle="Edit shipping policy" />
                 <ShippingPolicyEditor />
+              </>
+            }
+          />
+          <Route 
+            path="/settings/refund-policy-editor" 
+            element={
+              <>
+                <Header title="Refund Policy" subtitle="Edit refund policy" />
+                <RefundPolicyEditor />
+              </>
+            }
+          />
+          <Route 
+            path="/settings/about-editor" 
+            element={
+              <>
+                <Header title="About Us" subtitle="Edit about us content" />
+                <AboutUsEditor />
               </>
             }
           />

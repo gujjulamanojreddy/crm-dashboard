@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '../components/ui/Button';
 import { uploadLogo, updateSettings, getSettings } from '../lib/storage';
 import toast from 'react-hot-toast';
+import { Trash2, Save } from 'lucide-react';
 
 interface LogoState {
   file: File | null;
@@ -51,26 +52,44 @@ const Logos: React.FC = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (type: keyof LogoUploadState) => {
+    if (!logos[type].file) return;
+    
     setIsLoading(true);
     try {
-      const updates: Record<string, string> = {};
-
-      // Upload each changed logo
-      for (const [key, value] of Object.entries(logos)) {
-        if (value.file) {
-          const { url } = await uploadLogo(value.file, key);
-          updates[key] = url;
-        }
-      }
-
-      if (Object.keys(updates).length > 0) {
-        await updateSettings(updates);
-        toast.success('Logos updated successfully');
-      }
+      const { url } = await uploadLogo(logos[type].file!, type);
+      const updates = {
+        [type]: url
+      };
+      await updateSettings(updates);
+      setLogos(prev => ({
+        ...prev,
+        [type]: { file: null, preview: url }
+      }));
+      toast.success('Logo saved successfully');
     } catch (error) {
-      console.error('Error saving logos:', error);
-      toast.error('Failed to save logos');
+      console.error('Error saving logo:', error);
+      toast.error('Failed to save logo');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemove = async (type: keyof LogoUploadState) => {
+    setIsLoading(true);
+    try {
+      const updates = {
+        [type]: ''
+      };
+      await updateSettings(updates);
+      setLogos(prev => ({
+        ...prev,
+        [type]: { file: null, preview: '' }
+      }));
+      toast.success('Logo removed successfully');
+    } catch (error) {
+      console.error('Error removing logo:', error);
+      toast.error('Failed to remove logo');
     } finally {
       setIsLoading(false);
     }
@@ -101,36 +120,61 @@ const Logos: React.FC = () => {
     return (
       <div>
         <label className="block mb-2 text-sm text-gray-700">{label}</label>
-        <div className="flex items-center gap-4">
-          <div className="flex-grow">
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange(type)}
-                className="block flex-grow text-sm text-slate-500 p-2 border rounded
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-violet-50 file:text-violet-700
-                  hover:file:bg-violet-100
-                  focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-              />
-              <span className={getFrameStyle()}>
-                Frame Ji
-              </span>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-grow">
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange(type)}
+                  disabled={isLoading}
+                  className="block flex-grow text-sm text-slate-500 p-2 border rounded
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-violet-700
+                    hover:file:bg-violet-100
+                    focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                />
+                <span className={getFrameStyle()}>
+                  Frame Ji
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Recommended size: 250 x 100 pixels</p>
             </div>
-            <p className="mt-1 text-xs text-gray-500">Recommended size: 250 x 100 pixels</p>
+            {value.preview && (
+              <div className="flex-shrink-0 w-20 h-20 border rounded-lg overflow-hidden">
+                <img 
+                  src={value.preview} 
+                  alt={`${type} preview`} 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
           </div>
-          {value.preview && (
-            <div className="flex-shrink-0 w-20 h-20 border rounded-lg overflow-hidden">
-              <img 
-                src={value.preview} 
-                alt={`${type} preview`} 
-                className="w-full h-full object-contain"
-              />
-            </div>
-          )}
+          <div className="flex gap-2">
+            {value.file && (
+              <Button
+                onClick={() => handleSave(type)}
+                isLoading={isLoading}
+                className="bg-green-500 text-white hover:bg-green-600"
+                leftIcon={<Save size={16} />}
+              >
+                Save
+              </Button>
+            )}
+            {value.preview && (
+              <Button
+                onClick={() => handleRemove(type)}
+                isLoading={isLoading}
+                className="bg-red-500 text-white hover:bg-red-600"
+                leftIcon={<Trash2 size={16} />}
+              >
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -143,7 +187,7 @@ const Logos: React.FC = () => {
       </div>
       
       <div className="bg-white rounded-lg p-6 shadow-sm max-w-3xl">
-        <div className="space-y-6">
+        <div className="space-y-8">
           <LogoUploadField 
             label="Header Logo for user Website" 
             type="headerLogo" 
@@ -164,16 +208,6 @@ const Logos: React.FC = () => {
             value={logos.adminLogo}
             frameStyle="dark"
           />
-
-          <div className="pt-4">
-            <Button
-              onClick={handleSave}
-              isLoading={isLoading}
-              className="bg-green-500 text-white px-6 py-2 rounded text-sm font-medium hover:bg-green-600 transition-colors"
-            >
-              Save Changes
-            </Button>
-          </div>
         </div>
       </div>
     </div>

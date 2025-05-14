@@ -178,7 +178,7 @@ const ShippingPolicyEditor: React.FC = () => {
                   height: 500,
                   menubar: false,
                   plugins: ['lists'],
-                  readonly: false,
+                  disabled: false,
                   toolbar: [
                     { name: 'styles', items: ['formatselect'] },
                     { name: 'fontfamily', items: ['fontselect'] },

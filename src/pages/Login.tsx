@@ -30,66 +30,115 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="bg-blue-600 p-3 rounded-lg shadow-lg">
-            <Store className="h-12 w-12 text-white" />
-          </div>
+    <div className="min-h-screen flex flex-col justify-center items-center relative overflow-hidden bg-gradient-to-tr from-blue-950 via-blue-900 to-blue-950">
+      {/* Animated background elements */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-[800px] h-[800px] bg-blue-500 rounded-full opacity-20 blur-3xl animate-blob" />
+          <div className="w-[600px] h-[600px] bg-blue-400 rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000 absolute" />
+          <div className="w-[500px] h-[500px] bg-blue-600 rounded-full opacity-20 blur-3xl animate-blob animation-delay-4000 absolute" />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Welcome to NeonFlake CRM
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to access your dashboard
-        </p>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-800/10 to-blue-950" />
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl rounded-lg sm:px-10 border border-gray-100">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <Input
-              label="Email address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              fullWidth
-              leftIcon={<Mail size={18} className="text-gray-500" />}
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              fullWidth
-              leftIcon={<Lock size={18} className="text-gray-500" />}
-            />
-
-            <div>
-              <Button
-                type="submit"
-                fullWidth
-                isLoading={loading}
-                rightIcon={<ArrowRight size={18} />}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-              >
-                Sign in
-              </Button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
+      {/* Content */}
+      <div className="relative w-full py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="flex justify-center mb-8 scale-110">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl blur opacity-50 group-hover:opacity-75 transition duration-300"></div>
+              <div className="relative bg-gradient-to-tr from-blue-600 to-blue-500 p-4 rounded-xl shadow-[0_0_40px_rgba(59,130,246,0.3)] transform hover:scale-105 transition duration-300">
+                <Store className="h-12 w-12 text-white transform group-hover:rotate-6 transition duration-300" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Powered by NeonFlake
-                </span>
+            </div>
+          </div>
+          <h2 className="mt-6 text-center text-4xl font-black">
+            <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent drop-shadow-lg">
+              Welcome to NeonFlake CRM
+            </span>
+          </h2>
+          <p className="mt-3 text-center text-sm text-blue-200/80">
+            Sign in to access your dashboard
+          </p>
+        </div>
+
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/50 to-blue-600/50 rounded-2xl blur opacity-50 group-hover:opacity-75 transition duration-300"></div>
+            <div className="relative bg-white/10 backdrop-blur-xl py-8 px-4 shadow-2xl rounded-2xl sm:px-10 border border-white/20">
+              {/* Background spotlight effect */}
+              <div className="absolute -inset-[150px] bg-gradient-to-r from-blue-500/20 via-transparent to-transparent rotate-45 translate-y-full group-hover:translate-y-0 transition-all duration-700" />
+              
+              <div className="relative">
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <div className="space-y-5">
+                    <Input
+                      label="Email address"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      fullWidth
+                      leftIcon={
+                        <Mail 
+                          size={18} 
+                          className="text-blue-300 group-hover:text-blue-200 transition-colors duration-200" 
+                        />
+                      }
+                      className="bg-white/10 border-white/20 text-white placeholder:text-blue-200/50 focus:border-blue-400"
+                    />
+
+                    <Input
+                      label="Password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      fullWidth
+                      leftIcon={
+                        <Lock 
+                          size={18} 
+                          className="text-blue-300 group-hover:text-blue-200 transition-colors duration-200" 
+                        />
+                      }
+                      className="bg-white/10 border-white/20 text-white placeholder:text-blue-200/50 focus:border-blue-400"
+                    />
+                  </div>
+
+                  <div>
+                    <Button
+                      type="submit"
+                      fullWidth
+                      isLoading={loading}
+                      rightIcon={
+                        <ArrowRight 
+                          size={18} 
+                          className="group-hover:translate-x-1 transition-transform duration-200" 
+                        />
+                      }
+                      className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-3 rounded-xl
+                        hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-transparent
+                        transform hover:scale-[1.02] transition-all duration-200 font-medium group"
+                    >
+                      <span className="relative z-10">Sign in</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-200" />
+                    </Button>
+                  </div>
+                </form>
+
+                <div className="mt-8">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-white/10" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-4 text-blue-200/60 bg-gradient-to-b from-transparent via-black/5 to-transparent backdrop-blur-sm rounded-full">
+                        Powered by NeonFlake
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
