@@ -1,11 +1,11 @@
-import React, { useRef, useEffect, useState } from 'react';
+{`import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { Editor } from '@tinymce/tinymce-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
-const initialContent = `
+const initialContent = \`
 <h2 class="font-bold mb-2">Terms and Conditions</h2>
 <p class="mb-2">These Terms and Conditions govern your use of Frame ji (framejl.com) and the services offered by NeonFlake Enterprises OPC Pvt Ltd.</p>
 
@@ -45,7 +45,7 @@ const initialContent = `
 
 <h3 class="font-bold mb-2 mt-4">6. Limitation of Liability</h3>
 <p class="mb-2">NeonFlake Enterprises OPC Pvt Ltd shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use our services.</p>
-`;
+\`;
 
 const TermsEditor: React.FC = () => {
   const navigate = useNavigate();
@@ -132,7 +132,7 @@ const TermsEditor: React.FC = () => {
       console.error('Error saving terms:', error);
       toast.error(
         error.message 
-          ? `Failed to save: ${error.message}` 
+          ? \`Failed to save: \${error.message}\` 
           : 'Failed to save terms. Please try again.'
       );
     }
@@ -204,7 +204,7 @@ const TermsEditor: React.FC = () => {
                     { name: 'indentation', items: ['outdent', 'indent'] },
                     { name: 'script', items: ['superscript', 'subscript'] }
                   ],
-                  content_style: `
+                  content_style: \`
                     body {
                       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                       font-size: 14px;
@@ -212,7 +212,7 @@ const TermsEditor: React.FC = () => {
                       padding: 1rem;
                       color: #374151;
                     }
-                  `,
+                  \`,
                   font_formats: 'Normal=sans-serif',
                   fontsize_formats: '8pt 10pt 12pt 14pt 18pt 24pt',
                   block_formats: 'Normal=p',
@@ -238,4 +238,4 @@ const TermsEditor: React.FC = () => {
   );
 };
 
-export default TermsEditor;
+export default TermsEditor;`}

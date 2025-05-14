@@ -1,11 +1,11 @@
-import React, { useRef, useEffect, useState } from 'react';
+{`import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { Editor } from '@tinymce/tinymce-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
-const initialContent = `Shipping Policy
+const initialContent = \`Shipping Policy
 
 1. Processing Time
 - Standard production time: 5-7 business days
@@ -30,7 +30,7 @@ const initialContent = `Shipping Policy
 5. Delivery
 - Signature required for delivery
 - Alternative delivery instructions can be provided during checkout
-- No delivery on national holidays`;
+- No delivery on national holidays\`;
 
 const ShippingPolicyEditor: React.FC = () => {
   const navigate = useNavigate();
@@ -117,7 +117,7 @@ const ShippingPolicyEditor: React.FC = () => {
       console.error('Error saving shipping policy:', error);
       toast.error(
         error.message 
-          ? `Failed to save: ${error.message}` 
+          ? \`Failed to save: \${error.message}\` 
           : 'Failed to save shipping policy. Please try again.'
       );
     }
@@ -189,7 +189,7 @@ const ShippingPolicyEditor: React.FC = () => {
                     { name: 'indentation', items: ['outdent', 'indent'] },
                     { name: 'script', items: ['superscript', 'subscript'] }
                   ],
-                  content_style: `
+                  content_style: \`
                     body {
                       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                       font-size: 14px;
@@ -197,7 +197,7 @@ const ShippingPolicyEditor: React.FC = () => {
                       padding: 1rem;
                       color: #374151;
                     }
-                  `,
+                  \`,
                   font_formats: 'Normal=sans-serif',
                   fontsize_formats: '8pt 10pt 12pt 14pt 18pt 24pt',
                   block_formats: 'Normal=p',
@@ -223,4 +223,4 @@ const ShippingPolicyEditor: React.FC = () => {
   );
 };
 
-export default ShippingPolicyEditor;
+export default ShippingPolicyEditor;`}
